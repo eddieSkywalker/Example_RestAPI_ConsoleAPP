@@ -14,7 +14,7 @@ namespace ConsoleProgram
         public string Text { get; set; }
     }
 
-    //Main class used to execute search from "BAD API".
+    //Main class used to execute search from "BAD API". Intention is to return all tweets from 2016-2017.
     public class assessment_RestAPI
     {
         //TODO: Declare Class Variables
@@ -39,7 +39,7 @@ namespace ConsoleProgram
             client.BaseAddress = new Uri(URL);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            grabAndStoreTweets();
+            GrabAndStoreTweets();
         }
 
         /* Desc: Used to gather response body content and extract into tweets.
@@ -47,9 +47,10 @@ namespace ConsoleProgram
          * 
          * Args:  
          */
-        private static void grabAndStoreTweets()
+        private static void GrabAndStoreTweets()
         {
             string newStartDate = "";
+            string year;
 
             do
             {
@@ -63,11 +64,15 @@ namespace ConsoleProgram
                     //check for new tweets, avoid duplicate attempts
                     foreach (var tweet in listOfTweets)
                     {
+                        //extract year before converting to local time due to UTC offset. Avoid 2018 tweets.
+                        year = tweet.Stamp.Substring(0, 4);
+
                         //exit if tweets are past 2017
-                        if (DateTime.Compare(Convert.ToDateTime(tweet.Stamp), Convert.ToDateTime(endTime)) > 0)
+                        if ((DateTime.Compare(Convert.ToDateTime(tweet.Stamp), Convert.ToDateTime(endTime)) > 0) || year.Contains("2018"))
                         {
                             withinDateRange = false;
-                            Console.WriteLine("\n\nTotal Tweets Collected: " + StoredTweets.Count);
+                            Console.WriteLine("\n\n--------------------------------\n");
+                            Console.WriteLine("Total Tweets Collected: " + StoredTweets.Count);
                             Console.WriteLine("Program Finished.");
 
                             break;
@@ -87,17 +92,8 @@ namespace ConsoleProgram
                             }
                         }
                     }
-
                     //update URL string for new date collection
                     urlParameters = "/api/v1/Tweets?startDate=" + Convert.ToDateTime(newStartDate) + "&endDate=2018-12-31T23%3A59%3A49.271Z";
-
-                    ////exit if past due date
-                    //if (DateTime.Compare(Convert.ToDateTime(newStartDate), Convert.ToDateTime(endTime)) > 0)
-                    //{
-                    //    withinDateRange = false;
-                    //    Console.WriteLine("\n\nTotal Tweets Collected: " + StoredTweets.Count);
-                    //    Console.WriteLine("Program Finished.");
-                    //}
                 }
                 else
                 {
